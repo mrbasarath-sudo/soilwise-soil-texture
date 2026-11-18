@@ -106,25 +106,80 @@ def main():
         layout="centered",
     )
 
-    with st.container(border=True):
-        brand_column, title_column = st.columns(
-            [0.34, 1],
-            vertical_alignment="center",
-        )
+    st.html(
+        """
+        <style>
+        .stApp {
+            background:
+                radial-gradient(1200px 600px at 85% -10%, #1f7a55 0%, transparent 60%),
+                radial-gradient(900px 500px at -10% 10%, #13573d 0%, transparent 55%),
+                linear-gradient(180deg, #0b3b2a 0%, #062c1f 100%);
+            background-attachment: fixed;
+        }
+        [data-testid="stHeader"] { background: transparent; }
+        [data-testid="stMainBlockContainer"] {
+            max-width: 960px;
+            padding-top: 1.25rem;
+        }
+        .st-key-upload_card, .st-key-preview_card, .st-key-warning_card,
+        .st-key-texture_card, .st-key-error_card, .st-key-guidance_card {
+            background: #ffffff;
+            color: #14281f;
+            border: 1px solid #d6e5db;
+            border-radius: 20px;
+            padding: 1.25rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+        }
+        .st-key-upload_card h2, .st-key-preview_card h2,
+        .st-key-warning_card h2, .st-key-texture_card h2,
+        .st-key-error_card h2, .st-key-guidance_card h2,
+        .st-key-upload_card h3, .st-key-preview_card h3,
+        .st-key-texture_card h3, .st-key-error_card h3,
+        .st-key-guidance_card h3 {
+            color: #11523a;
+        }
+        .st-key-upload_card p, .st-key-preview_card p,
+        .st-key-warning_card p, .st-key-texture_card p,
+        .st-key-error_card p, .st-key-guidance_card p,
+        .st-key-upload_card label,
+        .st-key-upload_card [data-testid="stWidgetLabel"] {
+            color: #14281f;
+        }
+        .st-key-warning_card {
+            background: #fff6dc;
+            border-left: 6px solid #f2c14e;
+        }
+        .st-key-soil_header h1 { color: #ffffff; }
+        .st-key-soil_header p,
+        .st-key-soil_header [data-testid="stCaptionContainer"] {
+            color: #cfe8d8;
+        }
+        .st-key-soil_header [data-testid="stMarkdownContainer"] {
+            color: #ffffff;
+        }
+        [data-testid="stSidebar"] {
+            background: #0b3b2a;
+        }
+        @media (max-width: 760px) {
+            [data-testid="stMainBlockContainer"] {
+                padding: 1rem 1rem 2rem;
+            }
+        }
+        </style>
+        """
+    )
+
+    with st.container(key="soil_header"):
+        brand_column, title_column = st.columns([0.13, 1], vertical_alignment="center")
         with brand_column:
             if LOGO_PATH.is_file():
-                st.image(LOGO_PATH, width=168)
+                st.image(LOGO_PATH, width=72)
         with title_column:
-            st.caption("SHER-E-KASHMIR UNIVERSITY OF AGRICULTURAL SCIENCES & TECHNOLOGY")
+            st.caption("SKUAST-KASHMIR  ·  SOIL COMPOSITION")
+            st.badge("EXPERIMENTAL", icon=":material/science:", color="yellow")
             st.title("Soilwise", anchor=False)
             st.write(
-                "A considered first look at soil texture, drawn from the "
-                "composition of a sample."
-            )
-            st.badge(
-                "IMAGE-BASED RESEARCH ESTIMATE",
-                icon=":material/science:",
-                color="green",
+                "Estimate soil texture from a photograph, built on Kashmir soil samples."
             )
 
     with st.sidebar:
@@ -137,15 +192,18 @@ def main():
                 "if it is not at the default location."
             ),
         )
-        st.caption("The model runs on the app server. Uploaded images are used for analysis.")
+        st.caption(
+            "Runs on this app. Uploaded images are sent to the server for prediction."
+        )
 
     model_path = Path(model_path_text).expanduser()
-    st.space("medium")
-    st.subheader("A simple field reading", anchor=False)
-    with st.container(horizontal=True, gap="small"):
-        st.metric("01", "Choose a photograph", border=True)
-        st.metric("02", "Review the sample", border=True)
-        st.metric("03", "Read the estimate", border=True)
+    with st.container(key="warning_card"):
+        st.markdown(
+            "**Not validated.** In the held-out test, the model's estimates were "
+            "off by about **21.4 percentage points for sand**, **7.7 for silt**, "
+            "and **22.2 for clay** on average. Use these results for experiments "
+            "only—not for agricultural or purchasing decisions."
+        )
     st.space("small")
     upload_column, preview_column = st.columns(
         [1, 1],
@@ -153,8 +211,8 @@ def main():
     )
 
     with upload_column:
-        with st.container(border=True):
-            st.subheader("01  ·  Select a sample")
+        with st.container(key="upload_card"):
+            st.subheader("1. Soil photo")
             st.write("Choose a clear, well-lit photograph of your soil.")
             uploaded_image = st.file_uploader(
                 "Upload a soil image",
@@ -163,6 +221,7 @@ def main():
                 help="Use a clear, well-lit photo of the soil sample.",
             )
             st.caption("JPG · PNG · WEBP · BMP  /  Maximum 20 MB")
+            st.caption("Your photo is sent to the server for prediction and is not stored.")
 
     image = None
     image_error = None
@@ -175,18 +234,17 @@ def main():
             image_error = f"Could not read this image: {exc}"
 
     with preview_column:
-        with st.container(border=True):
-            st.subheader("02  ·  Sample preview")
+        with st.container(key="preview_card"):
+            st.subheader("2. Prediction")
             if image is not None:
                 st.image(image, caption=uploaded_image.name, width="stretch")
             elif image_error:
                 st.error(image_error)
             else:
-                st.caption("Your selected soil photograph will appear here.")
+                st.caption("Choose a photo and press Predict.")
 
-    st.space("small")
     analyze = st.button(
-        "Prepare texture estimate",
+        "Predict",
         type="primary",
         icon=":material/analytics:",
         disabled=image is None,
@@ -209,48 +267,65 @@ def main():
 
                 texture = classify_texture(*prediction)
                 st.space("small")
-                st.caption("03  ·  TEXTURE REPORT")
-                with st.container(border=True):
-                    st.subheader("Estimated soil texture")
-                    st.metric("Texture class", texture)
-                    st.caption(
-                        "Derived from estimated sand, silt and clay percentages "
-                        "using USDA texture-triangle categories."
+                with st.container(key="texture_card"):
+                    st.subheader("USDA texture class")
+                    st.metric("Estimated class", texture)
+                    st.markdown("**Estimated composition**")
+                    st.html(
+                        f"""
+                        <div style="display:flex;height:26px;border-radius:10px;
+                                    overflow:hidden;margin:10px 0;background:#e6f2ea">
+                          <span title="Sand {prediction[0]:.1f}%"
+                                style="width:{prediction[0]:.3f}%;background:#d9a441"></span>
+                          <span title="Silt {prediction[1]:.1f}%"
+                                style="width:{prediction[1]:.3f}%;background:#a98467"></span>
+                          <span title="Clay {prediction[2]:.1f}%"
+                                style="width:{prediction[2]:.3f}%;background:#8c3b1e"></span>
+                        </div>
+                        <div style="display:flex;gap:14px;flex-wrap:wrap;
+                                    color:#5a6f63;font:0.9rem system-ui,sans-serif">
+                          <span><b style="color:#d9a441">●</b> Sand {prediction[0]:.1f}%</span>
+                          <span><b style="color:#a98467">●</b> Silt {prediction[1]:.1f}%</span>
+                          <span><b style="color:#8c3b1e">●</b> Clay {prediction[2]:.1f}%</span>
+                        </div>
+                        """
                     )
-
-                with st.container(border=True):
-                    st.subheader("Estimated composition")
-                    value_columns = st.columns(3)
-                    for column, name, value in zip(
-                        value_columns, TARGET_NAMES, prediction
-                    ):
-                        with column:
-                            st.metric(name, f"{value:.1f}%")
-                    for name, value in zip(TARGET_NAMES, prediction):
-                        st.progress(
-                            min(max(int(round(value)), 0), 100),
-                            text=f"{name}  ·  {value:.1f}%",
-                        )
                     st.caption(
-                        "The composition totals 100%. Soil moisture, lighting, "
-                        "and sample preparation can affect image-based estimates."
+                        "Texture name is derived from predicted percentages using "
+                        "USDA texture-triangle categories."
                     )
             except (OSError, RuntimeError, ValueError, KeyError) as exc:
                 st.error(f"Could not run the model: {exc}")
 
     st.space("small")
-    st.caption(
-        "SOILWISE  ·  IMAGE-BASED RESEARCH PROTOTYPE  ·  NOT A SUBSTITUTE FOR LABORATORY ANALYSIS"
-    )
-    with st.expander("About this estimate", icon=":material/info:"):
-        st.write(
-            "The percentages are predicted by a model fine-tuned from "
-            "MobileNetV3-Small. The texture name is derived from those predicted "
-            "percentages using USDA texture-triangle categories. Test errors "
-            "were substantial, especially for sand and clay, so treat this as "
-            "an early research estimate. For decisions that depend on accurate "
-            "soil texture, use a laboratory measurement."
+    with st.container(key="error_card"):
+        st.subheader("3. Typical error by property")
+        st.caption(
+            "Mean absolute error on held-out soils, in percentage points. "
+            "This is error, not prediction accuracy."
         )
+        error_columns = st.columns(3)
+        for column, name, error in zip(error_columns, TARGET_NAMES, (21.4, 7.7, 22.2)):
+            with column:
+                st.metric(f"{name} error", f"±{error:.1f} pp")
+        st.caption(
+            "The test split contained 147 photographs from 15 distinct soil samples. "
+            "The model has not been validated against an independent laboratory study."
+        )
+
+    with st.container(key="guidance_card"):
+        st.subheader("4. Before using the estimate")
+        st.markdown(
+            "- This is an experimental image model, not laboratory soil analysis.\n"
+            "- Lighting, moisture, camera distance, and sample preparation may change results.\n"
+            "- Use a lab test when accurate soil texture is important."
+        )
+
+    st.caption("SOILWISE  ·  EXPERIMENTAL USE ONLY  ·  SKUAST-KASHMIR")
+
+
+main()
+
 
 
 main()
