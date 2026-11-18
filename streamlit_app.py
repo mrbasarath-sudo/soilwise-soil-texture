@@ -165,23 +165,9 @@ def main():
                 "Estimate soil texture from a photograph, built on Kashmir soil samples."
             )
 
-    with st.sidebar:
-        st.header("Analysis settings")
-        model_path_text = st.text_input(
-            "Model checkpoint",
-            value=str(DEFAULT_MODEL),
-            help=(
-                "Choose soil_texture_model.pth from your soil_model_output folder "
-                "if it is not at the default location."
-            ),
-        )
-        st.caption(
-            "Runs on this app. Uploaded images are sent to the server for prediction."
-        )
-
-    model_path = Path(model_path_text).expanduser()
+    model_path = DEFAULT_MODEL
     st.warning(
-        "**Not validated.** In the held-out test, the model's estimates were "
+        " In the held-out test, the model's estimates were "
         "off by about **21.4 percentage points for sand**, **7.7 for silt**, "
         "and **22.2 for clay** on average. Use these results for experiments "
         "only—not for agricultural or purchasing decisions."
@@ -279,35 +265,15 @@ def main():
             except (OSError, RuntimeError, ValueError, KeyError) as exc:
                 st.error(f"Could not run the model: {exc}")
 
-    st.space("small")
     with st.container(border=True):
-        st.subheader("3. Typical error by property")
-        st.caption(
-            "Mean absolute error on held-out soils, in percentage points. "
-            "This is error, not prediction accuracy."
-        )
-        error_columns = st.columns(3)
-        for column, name, error in zip(error_columns, TARGET_NAMES, (21.4, 7.7, 22.2)):
-            with column:
-                st.metric(f"{name} error", f"±{error:.1f} pp")
-        st.caption(
-            "The test split contained 147 photographs from 15 distinct soil samples. "
-            "The model has not been validated against an independent laboratory study."
-        )
-
-    with st.container(border=True):
-        st.subheader("4. Before using the estimate")
+        st.subheader("Before using the estimate")
         st.markdown(
-            "- This is an experimental image model, not laboratory soil analysis.\n"
+            "- This is an experimental image model and laboratory soil analysis.\n"
             "- Lighting, moisture, camera distance, and sample preparation may change results.\n"
             "- Use a lab test when accurate soil texture is important."
         )
 
-    st.caption("SOILWISE  ·  EXPERIMENTAL USE ONLY  ·  SKUAST-KASHMIR")
-
-
-main()
-
+    st.caption("SOILWISE  ·  SKUAST-KASHMIR")
 
 
 main()
