@@ -121,41 +121,24 @@ def main():
             max-width: 960px;
             padding-top: 1.25rem;
         }
-        .st-key-upload_card, .st-key-preview_card, .st-key-warning_card,
-        .st-key-texture_card, .st-key-error_card, .st-key-guidance_card {
+        [data-testid="stVerticalBlockBorderWrapper"] {
             background: #ffffff;
             color: #14281f;
             border: 1px solid #d6e5db;
             border-radius: 20px;
-            padding: 1.25rem;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
         }
-        .st-key-upload_card h2, .st-key-preview_card h2,
-        .st-key-warning_card h2, .st-key-texture_card h2,
-        .st-key-error_card h2, .st-key-guidance_card h2,
-        .st-key-upload_card h3, .st-key-preview_card h3,
-        .st-key-texture_card h3, .st-key-error_card h3,
-        .st-key-guidance_card h3 {
+        [data-testid="stVerticalBlockBorderWrapper"] h1,
+        [data-testid="stVerticalBlockBorderWrapper"] h2,
+        [data-testid="stVerticalBlockBorderWrapper"] h3 {
             color: #11523a;
         }
-        .st-key-upload_card p, .st-key-preview_card p,
-        .st-key-warning_card p, .st-key-texture_card p,
-        .st-key-error_card p, .st-key-guidance_card p,
-        .st-key-upload_card label,
-        .st-key-upload_card [data-testid="stWidgetLabel"] {
+        [data-testid="stVerticalBlockBorderWrapper"] p,
+        [data-testid="stVerticalBlockBorderWrapper"] label,
+        [data-testid="stVerticalBlockBorderWrapper"] [data-testid="stWidgetLabel"],
+        [data-testid="stVerticalBlockBorderWrapper"] [data-testid="stMetricLabel"],
+        [data-testid="stVerticalBlockBorderWrapper"] [data-testid="stMetricValue"] {
             color: #14281f;
-        }
-        .st-key-warning_card {
-            background: #fff6dc;
-            border-left: 6px solid #f2c14e;
-        }
-        .st-key-soil_header h1 { color: #ffffff; }
-        .st-key-soil_header p,
-        .st-key-soil_header [data-testid="stCaptionContainer"] {
-            color: #cfe8d8;
-        }
-        .st-key-soil_header [data-testid="stMarkdownContainer"] {
-            color: #ffffff;
         }
         [data-testid="stSidebar"] {
             background: #0b3b2a;
@@ -169,7 +152,7 @@ def main():
         """
     )
 
-    with st.container(key="soil_header"):
+    with st.container():
         brand_column, title_column = st.columns([0.13, 1], vertical_alignment="center")
         with brand_column:
             if LOGO_PATH.is_file():
@@ -197,13 +180,12 @@ def main():
         )
 
     model_path = Path(model_path_text).expanduser()
-    with st.container(key="warning_card"):
-        st.markdown(
-            "**Not validated.** In the held-out test, the model's estimates were "
-            "off by about **21.4 percentage points for sand**, **7.7 for silt**, "
-            "and **22.2 for clay** on average. Use these results for experiments "
-            "only—not for agricultural or purchasing decisions."
-        )
+    st.warning(
+        "**Not validated.** In the held-out test, the model's estimates were "
+        "off by about **21.4 percentage points for sand**, **7.7 for silt**, "
+        "and **22.2 for clay** on average. Use these results for experiments "
+        "only—not for agricultural or purchasing decisions."
+    )
     st.space("small")
     upload_column, preview_column = st.columns(
         [1, 1],
@@ -211,7 +193,7 @@ def main():
     )
 
     with upload_column:
-        with st.container(key="upload_card"):
+        with st.container(border=True):
             st.subheader("1. Soil photo")
             st.write("Choose a clear, well-lit photograph of your soil.")
             uploaded_image = st.file_uploader(
@@ -234,7 +216,7 @@ def main():
             image_error = f"Could not read this image: {exc}"
 
     with preview_column:
-        with st.container(key="preview_card"):
+        with st.container(border=True):
             st.subheader("2. Prediction")
             if image is not None:
                 st.image(image, caption=uploaded_image.name, width="stretch")
@@ -267,7 +249,7 @@ def main():
 
                 texture = classify_texture(*prediction)
                 st.space("small")
-                with st.container(key="texture_card"):
+                with st.container(border=True):
                     st.subheader("USDA texture class")
                     st.metric("Estimated class", texture)
                     st.markdown("**Estimated composition**")
@@ -298,7 +280,7 @@ def main():
                 st.error(f"Could not run the model: {exc}")
 
     st.space("small")
-    with st.container(key="error_card"):
+    with st.container(border=True):
         st.subheader("3. Typical error by property")
         st.caption(
             "Mean absolute error on held-out soils, in percentage points. "
@@ -313,7 +295,7 @@ def main():
             "The model has not been validated against an independent laboratory study."
         )
 
-    with st.container(key="guidance_card"):
+    with st.container(border=True):
         st.subheader("4. Before using the estimate")
         st.markdown(
             "- This is an experimental image model, not laboratory soil analysis.\n"
